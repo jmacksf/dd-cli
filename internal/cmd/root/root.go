@@ -31,7 +31,7 @@ func NewCmdRoot() *cobra.Command {
 func addChildCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		version.NewCmdVersion(),
-		generate.NewCmdSearch(),
+		search.NewCmdSearch(),
 	)
 }
 
