@@ -23,6 +23,6 @@ func NewCmdSearch() *cobra.Command {
 
 
 
-func generate(*cobra.Command, []string) {
+func search(*cobra.Command, []string) {
 	fmt.Printf("Running search")
 }
