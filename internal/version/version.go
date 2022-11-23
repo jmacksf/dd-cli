@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	v "github.com/jmack/dd-cli/internal/version"
+	v "github.com/jmacksf/dd-cli/internal/version"
 )
 
 // NewCmdVersion is a version command.
