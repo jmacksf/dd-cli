@@ -3,8 +3,8 @@ package root
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/jmacksf/dd-cli/internal/cmd/version"
 	"github.com/jmacksf/dd-cli/internal/cmd/search"
+	"github.com/jmacksf/dd-cli/internal/cmd/version"
 )
 
 // NewCmdRoot is a root command.

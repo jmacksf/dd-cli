@@ -1,9 +1,10 @@
 BINARY_NAME=dd-cli
 
 build:
-	GOARCH=amd64 GOOS=darwin  go build -o ${BINARY_NAME}-darwin  ./cmd/${BINARY_NAME}
-	GOARCH=amd64 GOOS=linux   go build -o ${BINARY_NAME}-linux   ./cmd/${BINARY_NAME}
-	GOARCH=amd64 GOOS=windows go build -o ${BINARY_NAME}-windows ./cmd/${BINARY_NAME}
+#	GOARCH=amd64 GOOS=darwin  go build -o ${BINARY_NAME}-darwin-amd64  ./cmd/${BINARY_NAME}
+#	GOARCH=amd64 GOOS=linux   go build -o ${BINARY_NAME}-linux   ./cmd/${BINARY_NAME}
+#	GOARCH=amd64 GOOS=windows go build -o ${BINARY_NAME}-windows ./cmd/${BINARY_NAME}
+	GOARCH=arm64 GOOS=darwin go build -o ${BINARY_NAME} ./cmd/${BINARY_NAME}
 
 run:
 	go run ./cmd/${BINARY_NAME} $(cmd)
