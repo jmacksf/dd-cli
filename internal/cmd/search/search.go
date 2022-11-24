@@ -72,6 +72,7 @@ type Count struct {
 	Muted  Muted  `json:"muted"`
 	Status Status `json:"status"`
 	Tag    Tag    `json:"tag"`
+	Type   Type   `json:"type"`
 }
 
 type Muted struct {
@@ -85,6 +86,11 @@ type Status struct {
 }
 
 type Tag struct {
+	Count int32  `json:"count"`
+	Name  string `json:"name"`
+}
+
+type Type struct {
 	Count int32  `json:"count"`
 	Name  string `json:"name"`
 }
