@@ -1,10 +1,10 @@
 package search
 
 import (
-	"fmt"
-	//	"log"
 	"context"
 	"encoding/json"
+	"fmt"
+	"log"
 	"os"
 
 	//	"path/filepath"
@@ -64,31 +64,61 @@ type Thresholds struct {
 
 // Counts struct... used for count summaries
 
-/*
 type Counts struct {
-    Muted Muted `json:"muted"`
-}*/
-
-// NewCmdSearch is the service catalog generate command.
-func NewCmdSearch() *cobra.Command {
-	return &cobra.Command{
-		Use:   "search",
-		Short: "searches monitors",
-		Long:  "searches monitors",
-		//Run:   search,
-		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) < 1 {
-				monitorSummary()
-			} else {
-				argument := args[0]
-				searchQuery(argument)
-			}
-			//fmt.Printf("argument: %T", argument)
-		},
-	}
+	Count []Count `json:"counts"`
 }
 
-func searchQuery(argument string) {
+type Count struct {
+	Muted  Muted  `json:"muted"`
+	Status Status `json:"status"`
+	Tag    Tag    `json:"tag"`
+}
+
+type Muted struct {
+	Count int32  `json:"count"`
+	Name  string `json:"name"`
+}
+
+type Status struct {
+	Count int32  `json:"count"`
+	Name  string `json:"name"`
+}
+
+type Tag struct {
+	Count int32  `json:"count"`
+	Name  string `json:"name"`
+}
+
+// NewCmdSearch is the dd-cli command.
+func NewCmdSearch() *cobra.Command {
+	cmd := cobra.Command{
+		Use:   "monitor",
+		Short: "searches monitors",
+		Long:  "searches monitors",
+		Run: func(cmd *cobra.Command, args []string) {
+			output, _ := cmd.Flags().GetString("out")
+			fmt.Printf(output)
+			if len(args) < 1 {
+				monitorSummary(output)
+			} else {
+				argument := args[0]
+				searchQuery(argument, output)
+			}
+		},
+	}
+	addFlags(&cmd)
+	return &cmd
+}
+
+func addFlags(cmd *cobra.Command) {
+	cmd.PersistentFlags().String("out", "json", "output format")
+}
+
+func searchQuery(argument string, output string) {
+
+	if !(checkOutputCmd(output)) {
+		log.Fatal("output command not supported, must be either \"json\" or \"text\"")
+	}
 
 	query := argument
 	ctx := datadog.NewDefaultContext(context.Background())
@@ -103,7 +133,37 @@ func searchQuery(argument string) {
 	}
 
 	responseContent, _ := json.MarshalIndent(resp, "", "  ")
+	switch output {
+	case "json":
+		monitorPrintJson(responseContent)
+	case "text":
+		monitorPrintTxt(responseContent)
+	}
+}
+
+func monitorSummary(output string) {
+
+	if !(checkOutputCmd(output)) {
+		log.Fatal("output command not supported, must be either \"json\" or \"text\"")
+	}
+
+	ctx := datadog.NewDefaultContext(context.Background())
+	configuration := datadog.NewConfiguration()
+	apiClient := datadog.NewAPIClient(configuration)
+	api := datadogV1.NewMonitorsApi(apiClient)
+	resp, r, err := api.SearchMonitors(ctx, *datadogV1.NewSearchMonitorsOptionalParameters())
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `MonitorsApi.SearchMonitors`: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+
+	responseContent, _ := json.MarshalIndent(resp, "", "  ")
 	//fmt.Fprintf(os.Stdout, "Response from `MonitorsApi.SearchMonitors`:\n%s\n", responseContent)
+	monitorPrintJson(responseContent)
+}
+
+func monitorPrintTxt(responseContent []byte) {
 
 	var monitors Monitors
 	json.Unmarshal([]byte(responseContent), &monitors)
@@ -120,19 +180,19 @@ func searchQuery(argument string) {
 	}
 }
 
-func monitorSummary() {
-
-	ctx := datadog.NewDefaultContext(context.Background())
-	configuration := datadog.NewConfiguration()
-	apiClient := datadog.NewAPIClient(configuration)
-	api := datadogV1.NewMonitorsApi(apiClient)
-	resp, r, err := api.SearchMonitors(ctx, *datadogV1.NewSearchMonitorsOptionalParameters())
-
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error when calling `MonitorsApi.SearchMonitors`: %v\n", err)
-		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
-	}
-
-	responseContent, _ := json.MarshalIndent(resp, "", "  ")
+func monitorPrintJson(responseContent []byte) {
 	fmt.Fprintf(os.Stdout, "Response from `MonitorsApi.SearchMonitors`:\n%s\n", responseContent)
+}
+
+func checkOutputCmd(output string) bool {
+	outputCommands := []string{
+		"json",
+		"text",
+	}
+	for _, item := range outputCommands {
+		if item == output {
+			return true
+		}
+	}
+	return false
 }
